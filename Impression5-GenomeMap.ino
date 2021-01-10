@@ -16,9 +16,7 @@ typedef struct
       uint8_t address;
       unsigned char tthresh[numElectrodes];
       unsigned char rthresh[numElectrodes];
-      uint8_t modifier[numElectrodes];
-      uint8_t key[numElectrodes];
-      uint8_t pressDuration[numElectrodes];
+      uint8_t identifier[numElectrodes];
   } mprs;
 
 MPR121_t MPR121A;
@@ -30,31 +28,23 @@ mprs chips[] = {
                     (mprs) {MPR121A, 0x5A,                           
                       {10,   10,   10,   10,   10,   10,   10,   10,   10,   10,   10,   10}, //tthresh      
                       {05,   05,   05,   05,   05,   05,   05,   05,   05,   05,   05,   05}, //rthresh        
-                      {00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00}, //modifier     
-                      {00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00}, //key     
-                      {00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00}  //pressDuration
+                      { 1,    2,    3,    4,    5,    6,    7,    8,    9,   10,   11,   12}, //identifier     
                     }/*, // move start of comment to define number of MPR chips.
                     
                     (mprs) {MPR121B, 0x5B, 
                       {20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20}, //tthresh      
                       {10,   10,   10,   10,   10,   10,   10,   10,   10,   10,   10,   10}, //rthresh     
-                      {00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00}, //modifier     
-                      {00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00}, //key     
-                      {00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00}  //pressDuration
+                      {13,   14,   15,   16,   17,   18,   19,   20,   21,   22,   23,   24}, //identifier     
                     },
                     (mprs) {MPR121C, 0x5C, 
                       {20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20}, //tthresh      
                       {10,   10,   10,   10,   10,   10,   10,   10,   10,   10,   10,   10}, //rthresh     
-                      {00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00}, //modifier     
-                      {00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00}, //key     
-                      {00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00}  //pressDuration
+                      {25,   26,   27,   28,   29,   30,   31,   32,   33,   34,   35,   36}, //identifier     
                     },
                     (mprs) {MPR121D, 0x5D, 
-                      {30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30}, //tthresh      
-                      {20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20}, //rthresh     
-                      {00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00}, //modifier     
-                      {00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00}, //key     
-                      {00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00, 00}  //pressDuration
+                      {20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20,   20}, //tthresh      
+                      {10,   10,   10,   10,   10,   10,   10,   10,   10,   10,   10,   10}, //rthresh     
+                      {37,   38,   39,   40,   41,   42,   43,   44,   45,   46,   47,   48}, //identifier     
                     }*/
                   };
 
@@ -134,7 +124,7 @@ void loop()
 {
   unsigned long currentMillis = millis();
 
-	// Capacitive Touch Sensor Keyboard emulator
+	// Scan capacitive touch sensors for new input.
   for(int index=0; index<LENGTH_OF_ARRAY(chips); index++){
     if(chips[index].device.touchStatusChanged()){
       chips[index].device.updateTouchData();
@@ -144,8 +134,8 @@ void loop()
             Serial.print(index, DEC);
             Serial.print(" electrode ");
             Serial.print(channel, DEC);
-            Serial.print(" key ");
-            Serial.print(chips[index].key[channel], HEX);
+            Serial.print(" Identifier 0x");
+            Serial.print(chips[index].identifier[channel], HEX);
             Serial.println(" was just touched!");  
           } else if(chips[index].device.isNewRelease(channel)){
             Serial.print("device ");
