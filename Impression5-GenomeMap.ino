@@ -5,23 +5,18 @@
   \author  Michael Flaga, michael@.flaga.net
 */
 
-#include "tpad.h"
-#include <Wire.h>
 #define LENGTH_OF_ARRAY(x) ((sizeof(x)/sizeof(x[0])))
 
-
+#include <Wire.h>
 
 #include <Adafruit_NeoPixel.h>
-
 #define NUMPIXELS 32
 #define NEOPIXLPIN 6
-#define LENGTH_OF_ARRAY(x) ((sizeof(x)/sizeof(x[0])))
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, NEOPIXLPIN, NEO_GRB + NEO_KHZ800);
 
-class segments
+struct
 {
-  public:
     int section;
     int numberOfLEDs;
     int startLEDpos;
@@ -30,8 +25,15 @@ class segments
     unsigned long previousMillis;
     int r[2], g[2], b[2];
 
-} segment[17];
+} segment[] = {
+  { 0, 16, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0} },
+  { 1,  4, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0} },
+  { 2,  4, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0} },
+  { 3,  4, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0} },
+  { 4,  4, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0} },
+};
 
+#include "tpad.h"
 tpad tpad;
 
 unsigned long previousMillis = 0;        // will store last time LED was updated
@@ -51,23 +53,13 @@ void setup()
   Serial.begin(115200);
   //while (!Serial); // only needed if you want serial feedback with the
   // Arduino Leonardo or Bare Touch Board
-  Serial.println("Setup() starting Version 2");
+  Serial.println("Setup() starting Version 2.1");
   Wire.begin();
 
   tpad.begin();
 
   // Too many Segments and NeoPixel for UNOs 2K of RAM, need to use Mega with 8K of RAM.
-  segment[0].numberOfLEDs  = 16;
-  segment[0].section  =  0;
-  segment[1].numberOfLEDs  = 4;
-  segment[1].section  =  1;
-  segment[2].numberOfLEDs  = 4;
-  segment[2].section  =  2;
-  segment[3].numberOfLEDs  = 4;
-  segment[3].section  =  3;
-  segment[4].numberOfLEDs  = 4;
-  segment[4].section  =  4;
-
+  
   strandsNumberOfLEDs = 0;
 
   for (int i = 0; i < LENGTH_OF_ARRAY(segment); i++) {
