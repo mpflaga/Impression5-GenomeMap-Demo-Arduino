@@ -10,8 +10,18 @@
 #include <Wire.h>
 
 #include <Adafruit_NeoPixel.h>
-#define NUMPIXELS 32
-#define NEOPIXLPIN 6
+
+#if defined(__AVR_ATmega2560__)
+  #define NUMPIXELS 1389
+  #define NEOPIXLPIN 11
+  #define TARGET_PAD 4
+  #define MPR121_IRQ_PIN 12
+#elif defined(__AVR_ATmega32U4__)
+  #define NUMPIXELS 32
+  #define NEOPIXLPIN 6
+  #define TARGET_PAD 12
+  #define MPR121_IRQ_PIN 7
+#endif
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, NEOPIXLPIN, NEO_GRB + NEO_KHZ800);
 
@@ -56,7 +66,7 @@ void setup()
   Serial.println("Setup() starting Version 2.1");
   Wire.begin();
 
-  tpad.begin();
+  tpad.begin(MPR121_IRQ_PIN);
 
   // Too many Segments and NeoPixel for UNOs 2K of RAM, need to use Mega with 8K of RAM.
   
@@ -114,27 +124,27 @@ void setup()
 
   int channel = 0;
 
-  updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 122, 40, 5 );
+  updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 122, 40, 5 ); // Amber
   strip.show(); // This sends the updated pixel color to the hardware.
   delay(250);
   channel++;
 
-  updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 244, 11, 146 );
+  updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 244, 11, 146 ); // Pink
   strip.show(); // This sends the updated pixel color to the hardware.
   delay(250);
   channel++;
 
-  updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 181, 74, 143 );
+  updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 181, 74, 143 ); // Off White
   strip.show(); // This sends the updated pixel color to the hardware.
   delay(250);
   channel++;
 
-  updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 255, 0, 0 );
+  updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 255, 0, 0 ); // Red
   strip.show(); // This sends the updated pixel color to the hardware.
   delay(250);
   channel++;
 
-  updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 0, 0, 255 );
+  updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 0, 0, 255 ); // Blue
   strip.show(); // This sends the updated pixel color to the hardware.
   delay(250);
   channel++;
@@ -146,24 +156,30 @@ void loop()
 {
   unsigned long currentMillis = millis();
 
-  int temp = tpad.scan(12);
+  int temp = tpad.scan(TARGET_PAD);
   if (temp > 0) {
-    Serial.println("12 was touched");
-    updateSegment(0, NUMPIXELS - 1, 0, 0, 0 );
-    updateSegment(segment[0].startLEDpos, segment[0].endLEDpos, 0, 255, 0 );
-    strip.show(); // This sends the updated pixel color to the hardware.
+    Serial.print(temp);
+    Serial.println(" was touched");
+    if (abs(temp) == TARGET_PAD) {
+      updateSegment(0, NUMPIXELS - 1, 0, 0, 0 );
+      updateSegment(segment[0].startLEDpos, segment[0].endLEDpos, 0, 255, 0 );
+      strip.show(); // This sends the updated pixel color to the hardware.
+    }
   } else if (0 > temp) {
-    Serial.println("12 was released");
-    int channel = 0;
-    updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 122, 40, 5 );
-    channel++;
-    updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 244, 11, 146 );
-    channel++;
-    updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 181, 74, 143 );
-    channel++;
-    updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 255, 0, 0 );
-    channel++;
-    updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 0, 0, 255 );
-    strip.show(); // This sends the updated pixel color to the hardware.         }
+    Serial.print(temp);
+    Serial.println(" was released");
+    if (abs(temp) == TARGET_PAD) {
+      int channel = 0;
+      updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 122, 40, 5 );
+      channel++;
+      updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 244, 11, 146 );
+      channel++;
+      updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 181, 74, 143 );
+      channel++;
+      updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 255, 0, 0 );
+      channel++;
+      updateSegment(segment[channel].startLEDpos, segment[channel].endLEDpos, 0, 0, 255 );
+      strip.show();
+    }
   }
 }

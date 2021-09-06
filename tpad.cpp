@@ -8,7 +8,9 @@ tpad::tpad() {
 tpad::~tpad() {
 }
 
-void tpad::begin() {
+void tpad::begin(int IRQpin) {
+  interruptPin = IRQpin;
+  
   for (int index = 0; index < LENGTH_OF_ARRAY(chips); index++) {
     Serial.print("Initializing MPR #");
     Serial.print(index);
@@ -43,7 +45,7 @@ void tpad::begin() {
     }
 
     // pin 4 is the MPR121 interrupt on the Bare Touch Board
-    chips[index].device.setInterruptPin(7);
+    chips[index].device.setInterruptPin(interruptPin);
 
     for (unsigned char channel = 0; channel < numElectrodes; channel++) {
 
@@ -64,6 +66,12 @@ void tpad::begin() {
 
 int tpad::scan(int targetButton) {
   // Scan capacitive touch sensors for new input.
+
+  if (::digitalRead(interruptPin)) {
+    return 0;
+  }
+
+  
   for (int index = 0; index < LENGTH_OF_ARRAY(chips); index++) {
     if (chips[index].device.touchStatusChanged()) {
       chips[index].device.updateTouchData();
@@ -77,7 +85,7 @@ int tpad::scan(int targetButton) {
           Serial.print(chips[index].identifier[electrode], DEC);
           Serial.println(" was just touched!");
           if (chips[index].identifier[electrode] == targetButton) {
-            return +1;
+            return +targetButton;
           }
 
         } else if (chips[index].device.isNewRelease(electrode)) {
@@ -87,7 +95,7 @@ int tpad::scan(int targetButton) {
           Serial.print(electrode, DEC);
           Serial.println(" was just released.");
           if (chips[index].identifier[electrode] == targetButton) {
-            return -1;
+            return -targetButton;
           }
         }
       }
